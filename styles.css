@@ -1,0 +1,23 @@
+body {
+    background-color: #EAF7FB;  
+  }
+
+  .callout-important {
+    background-color: white !important;
+  }
+
+  h1.title {
+    color: #1CABE2;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: white;
+    border-radius: 10px
+  }
+
+  .subtitle {
+    color: #1CABE2;
+    font-weight: bold; 
+    text-align: center;
+  }

@@ -1,0 +1,931 @@
+---
+title: "THE RIGHT TO LEARN"
+subtitle: "**Exploring why millions of youths still miss out on education.**"
+author: "Federica Regondi"
+date: "April 27, 2025"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: flatly
+    number-sections: false 
+    smooth-scroll: true
+    self-contained: false 
+    embed-resources: false
+    code-fold: true 
+    css: styles.css
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{python}
+#| echo: false
+import ipywidgets as widgets
+from IPython.display import display
+```
+------------------------------------------------------------------------------------------------------------------------------------------
+
+:::{.callout-important}
+## Why this matters
+<div style="text-align: justify;">
+
+At <span style="font-weight: bold; color: #1CABE2">UNICEF</span>, we stand for one simple truth: <b style="color:#1CABE2;">every child deserves the chance to learn</b>. But across the world, millions are still out of the classroom, not because they lack potential, but because of where they’re born, their gender, or their family’s income. This report highlights the reality behind the numbers, using data to tell the story of <b style="color:#1CABE2;">who gets to learn</b> and <b style="color:#1CABE2;">who’s still waiting</b>. From country-level maps to global trends, we explore how access to education remains unequal, and why it’s time to act.  
+
+An interactive version of the analysis is available on <a href="https://public.tableau.com/app/profile/federica.regondi/viz/Therighttolearn_StudentdataViz2025/Dashboard" target="_blank" style="color:#1CABE2; font-weight:bold;">Tableau</a>.
+
+</div>
+
+<p>For further additional information, click on the following banners:</p>
+<a href="https://www.unicef.org/reports/UNICEF-education-strategy-2019-2030" target="_blank">
+  <img src="images/unicef_strategy.png" alt="UNICEF Education Strategy" style="width: 100vw; max-width: 100%; display: block; margin-bottom: 15px; margin-left: 0px; border-radius: 10px;">
+</a>
+
+<a href="https://www.unicef.org/reports/global-annual-results-report-2023-goal-area-2" target="_blank">
+  <img src="images/unicef_report.png" alt="UNICEF Annual Results Report 2023" style="width: 100vw; max-width: 100%; display: block; margin-left: 0px; border-radius: 10px;">
+</a>
+:::
+
+## Introduction
+
+<div style="text-align: justify;">
+
+Every child is born with the <b style="color:#1CABE2;">right to learn</b>, a right that should never depend on where they live, their gender, or how much their family earns.  
+<b style="color:#1CABE2;">Education</b> is the path that provides opportunities, fights poverty, and empowers future generations.
+Yet today, millions of children cannot access this right. Over <b style="color:#1CABE2;">251 million</b> school-age youths remain out of the classroom, since their opportunity to learn is limited by barriers that they did not choose.
+
+This report analyses the global education crisis. By examining how socioeconomic status, gender, and geography affect school attendance, it reveals the deep <b style="color:#1CABE2;">inequalities</b> that still shape the future of millions of youths.
+We aim to boost <b style="color:#1CABE2;">awareness</b> and drive action, because every child deserves the chance to <b style="color:#1CABE2;">learn</b>, <b style="color:#1CABE2;">grow</b>, and <b style="color:#1CABE2;">thrive</b>.
+
+</div>
+
+## Mapping the inequality of opportunity
+
+<div style="text-align: justify;">
+
+How does a country's wealth influence children's access to education? 
+
+This world map highlights the <b style="color:#1CABE2;">correlation between GDP per capita and school attendance</b> and defines a clear trend: countries with higher income levels (shaded in <b style="color:green;">green</b>) tend to have higher attendance rates, while lower-income countries (shaded in <b style="color:red;">red</b> and <b style="color:orange;">orange</b>) struggle to keep children in school. Conflict, poverty, and lack of infrastructure undermine the basic right to education. Take <b style="color:#1CABE2;">Bhutan</b>, for example. Despite recent development progress, the country’s <b style="color:#1CABE2;">GDP per capita of just $1,417</b> matches a <b style="color:#1CABE2;">school attendance rate of only 52.77%</b>.
+
+</div>
+
+<div style="text-align: justify;">
+
+<p style="font-style: italic;">
+🔍 Hover over each country to explore its adjusted net attendance rate and GDP per capita.
+</p>
+
+</div>
+
+<!--
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+%pip install plotly
+```
+-->
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.graph_objects as go
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+meta = pd.read_csv("data/unicef_metadata.csv")
+
+attendance_avg = df1.groupby("country", as_index=False)["obs_value"].mean()
+attendance_avg.rename(columns={"obs_value": "Attendance Rate"}, inplace=True)
+
+gdp_avg = meta.groupby("country", as_index=False)["GDP per capita (constant 2015 US$)"].mean()
+gdp_avg.rename(columns={"GDP per capita (constant 2015 US$)": "GDP per Capita"}, inplace=True)
+
+map_data = pd.merge(attendance_avg, gdp_avg, on="country")
+map_data = map_data.dropna(subset=["Attendance Rate", "GDP per Capita"])
+
+fig = go.Figure()
+
+fig.add_trace(go.Choropleth(
+    locations=map_data["country"],
+    locationmode="country names",
+    z=map_data["Attendance Rate"],
+    colorscale="RdYlGn",
+    colorbar=dict(
+        orientation="h",
+        thickness=10,
+        len=0.3,
+        x=0.5,
+        y=-0.15,
+        tickfont=dict(size=10),
+        title=dict(
+            text="Adjusted Net Attendance Rate",
+            font=dict(size=10),
+            side="bottom"
+        )
+    ),
+    marker_line_color="white",
+    zmin=0,
+    zmax=100,
+    showscale=True
+))
+
+fig.add_trace(go.Scattergeo(
+    locations=map_data["country"],
+    locationmode="country names",
+    text=[
+        f"<b>{c}</b><br>GDP per Capita: ${g:,.0f}<br>Adjusted Net Attendance Rate: {a:.2f}%"
+        for c, g, a in zip(map_data["country"], map_data["GDP per Capita"], map_data["Attendance Rate"])
+    ],
+    marker=dict(
+        size=(map_data["GDP per Capita"] / 1000).clip(8, 30),  
+        color="orange",
+        opacity=0.6,
+        line=dict(width=0)
+    ),
+    hoverinfo="text",
+    name="GDP & Attendance"
+))
+
+fig.update_layout(
+    geo=dict(
+        showframe=False,
+        showcoastlines=False,
+        projection_type="natural earth",
+        bgcolor="white",
+        center=dict(lat=0, lon=0),
+        fitbounds="locations",         
+        resolution=50
+    ),
+    margin=dict(l=10, r=10, t=8, b=15),
+    height=450,
+    width=800,
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+    font=dict(size=12)
+)
+
+fig
+```
+
+
+<div style="margin-top: 30px; text-align: justify;">
+
+This is a reminder that economic difficulties often translate into youths beign forced to exclude education as an option. 
+This map pushes us to rethink global priorities since we must work to obtain a world where a child's opportunity to learn doesn’t depend on their country’s GDP.
+
+</div> 
+
+
+## Where learning stops before it starts
+
+<div style="text-align: justify;">
+
+Lowest attendance, lowest resources: the bottom 10 countries for education access.
+
+In some parts of the world, going to school is still not accessible for several children. In countries like <b style="color:#1CABE2;">Burundi</b>, fewer than <b style="color:#1CABE2;">one in four children</b> attend school, even if education is a basic right. With a <b style="color:#1CABE2;">GDP per capita</b> of just <b style="color:#1CABE2;">$323</b>, families face massive economic difficulty that often result in children staying home or working instead. The pattern is similar in nations like <b style="color:#1CABE2;">Uganda</b>, <b style="color:#1CABE2;">Niger</b>, and <b style="color:#1CABE2;">Burkina Faso</b>, where low income goes hand in hand with low school access. <b style="color:#1CABE2;">South Sudan</b>, although it stands out with the <b style="color:#1CABE2;">highest GDP per capita</b> among this group at <b style="color:#1CABE2;">$1,682.86</b>, still struggles to bring youths to school, demonstrating that income alone isn’t always enough to guarantee education. 
+
+<p style="font-style: italic;">
+🔍 Hover over each country to explore its adjusted net attendance rate and GDP per capita.
+</p>
+
+</div>
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.graph_objects as go
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+meta = pd.read_csv("data/unicef_metadata.csv")
+
+tableau_countries = [
+    "South Sudan", "Guinea-Bissau", "Central African Republic", "Liberia",
+    "Chad", "Mozambique", "Burkina Faso", "Niger", "Uganda", "Burundi"
+]
+
+df_filtered = df1[df1["country"].isin(tableau_countries)]
+gdp_filtered = meta[meta["country"].isin(tableau_countries)]
+
+attendance_avg = df_filtered.groupby("country", as_index=False)["obs_value"].mean()
+attendance_avg.rename(columns={"obs_value": "Adjusted Attendance Rate"}, inplace=True)
+
+gdp_avg = gdp_filtered.groupby("country", as_index=False)["GDP per capita (constant 2015 US$)"].mean()
+gdp_avg.rename(columns={"GDP per capita (constant 2015 US$)": "GDP per Capita"}, inplace=True)
+
+merged = pd.merge(attendance_avg, gdp_avg, on="country")
+merged_sorted = merged.sort_values(by="Adjusted Attendance Rate", ascending=True)
+
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    y=merged_sorted["country"],
+    x=merged_sorted["Adjusted Attendance Rate"],
+    orientation='h',
+    marker_color="#FFC66E",
+    name="Attendance Rate",
+    hovertemplate=(
+        "<b>%{y}</b><br>" +
+        "Adjusted Net Attendance Rate: %{x:.2f}%<br>"
+    ),
+    customdata=merged_sorted[["GDP per Capita"]],
+    xaxis='x'  
+))
+
+fig.add_trace(go.Scatter(
+    y=merged_sorted["country"],
+    x=merged_sorted["GDP per Capita"],
+    mode='markers',
+    marker=dict(
+        size=15,
+        color='#EF5350',
+        symbol='square'
+    ),
+    name="GDP per Capita",
+    hovertemplate="<b>%{y}</b><br>GDP per Capita: $%{x:,.2f}",
+    xaxis='x2'  
+))
+
+fig.update_layout(
+    barmode='overlay',
+    xaxis=dict(
+        title='Adjusted Net Attendance Rate',
+        side='bottom',
+        showgrid=False,
+        zeroline=False,
+        ticksuffix="%"
+    ),
+    xaxis2=dict(
+        title='GDP per Capita (USD)',
+        overlaying='x',
+        side='top',
+        showgrid=False,
+        zeroline=False,
+        tickformat=".2f",
+        ticksuffix="$"  
+    ),
+    yaxis=dict(
+        title='Country',
+        categoryorder='total ascending'
+    ),
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    height=400,
+    width=800,
+    margin=dict(l=10, r=10, t=70, b=50),
+    showlegend=False
+)
+```
+
+<div style="margin-top: 30px; text-align: justify;">
+
+This suggests that conflict and weak governance also play a critical role in children's right to learn. These countries represent the most loud example of educational inequality.
+
+</div> 
+
+## Where children are missing out on school
+
+<div style="text-align: justify;">
+Out of schools: regions with the highest number of children not in education.
+
+Across the globe, the chance to go to school is still defined by geography. In <b style="color:#1CABE2;">Sub-Saharan Africa</b>, almost <b style="color:#1CABE2;">794 million children</b> remain out of school. A shocking number that reflects issues rooted in access and opportunity. In <b style="color:#1CABE2;">Central and Southern Asia</b> and <b style="color:#1CABE2;">Eastern and South-Eastern Asia</b>, the story is similar, with each region counting <b style="color:#1CABE2;">over 500 million</b> children and youths excluded from education. In opposition, regions like <b style="color:#1CABE2;">Europe</b>, <b style="color:#1CABE2;">North America</b>, and <b style="color:#1CABE2;">Oceania</b> score lower numbers, meaning that most youths are enrolled in education. The contrast is clear. A child’s right to learn still depends heavily on <b style="color:#1CABE2;">where they are born</b>, reminding us that <b style="color:#1CABE2;">inequality in education is still one of the world’s most severe issue</b>.
+
+<p style="font-style: italic;">
+🔍 Interact with the map: select a country to dive into its data!
+</p>
+
+</div>
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.graph_objects as go
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+meta = pd.read_csv("data/unicef_metadata.csv")
+
+df1.rename(columns={"obs_value": "Attendance Rate"}, inplace=True)
+latest_attendance = df1.sort_values("time_period").groupby("country", as_index=False).last()
+latest_population = meta.sort_values("year").groupby("country", as_index=False).last()
+merged = pd.merge(latest_attendance, latest_population[["country", "Population, total"]], on="country", how="inner")
+merged.dropna(subset=["Attendance Rate", "Population, total"], inplace=True)
+merged["Out-of-School Children"] = merged["Population, total"] * (1 - merged["Attendance Rate"] / 100)
+
+region_map = {
+    "Sub-Saharan Africa": [
+        "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cameroon", "Central African Republic", "Chad",
+        "Comoros", "Congo", "Congo, the Democratic Republic of the", "Ivory Coast", "Equatorial Guinea", "Eritrea",
+        "Ethiopia", "Gabon", "Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Madagascar",
+        "Malawi", "Mali", "Mauritania", "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "Senegal", "Sierra Leone",
+        "Somalia", "South Africa", "South Sudan", "Sudan", "Togo", "Uganda", "Tanzania, United Republic of", "Zambia", "Zimbabwe", "Sao Tome and Principe"
+    ],
+    "Central and Southern Asia": [
+        "Afghanistan", "Bangladesh", "Bhutan", "India", "Iran", "Kazakhstan", "Kyrgyzstan", "Maldives", "Nepal", "Pakistan",
+        "Sri Lanka", "Tajikistan", "Turkmenistan", "Uzbekistan"
+    ],
+    "Latin America and the Caribbean": [
+        "Argentina", "Barbados", "Belize", "Bolivia, Plurinational State of", "Brazil", "Chile", "Colombia", "Costa Rica",
+        "Cuba", "Dominican Republic", "Ecuador", "El Salvador", "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica",
+        "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Saint Lucia", "Suriname", "Turks and Caicos Islands", "Uruguay"
+    ],
+    "Eastern and South-Eastern Asia": [
+        "Brunei", "Cambodia", "China", "Indonesia", "Japan", "Korea, Democratic People's Republic of", "Lao People's Democratic Republic",
+        "Malaysia", "Mongolia", "Myanmar", "Philippines", "Republic of Korea", "Singapore", "Thailand", "Timor-Leste", "Viet Nam", "Vietnam"
+    ],
+    "Northern Africa and Western Asia": [
+        "Algeria", "Bahrain", "Egypt", "Iraq", "Israel", "Jordan", "Kuwait", "Lebanon", "Libya", "Morocco", "Oman",
+        "Palestinian Territory, Occupied", "Qatar", "Saudi Arabia", "Syrian Arab Republic", "Tunisia", "United Arab Emirates", "Yemen"
+    ],
+    "Oceania": [
+        "Australia", "Fiji", "Kiribati", "New Zealand", "Papua New Guinea", "Samoa", "Solomon Islands", "Tonga", "Tuvalu", "Vanuatu"
+    ],
+    "Europe and Northern America": [
+        "Albania", "Armenia", "Azerbaijan", "Belarus", "Bosnia and Herzegovina", "Canada", "Croatia", "Czech Republic", "Estonia", "Finland",
+        "France", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", "Moldova, Republic of",
+        "Montenegro", "Netherlands", "Norway", "Poland", "Portugal", "Romania", "Serbia", "Slovakia", "Slovenia", "Spain", "Sweden",
+        "Switzerland", "Ukraine", "United Kingdom", "United States", "Georgia", "Macedonia, the former Yugoslav Republic of"
+    ]
+}
+
+def assign_region(country):
+    for region, countries in region_map.items():
+        if country in countries:
+            return region
+    return "Other"
+
+merged["Region"] = merged["country"].apply(assign_region)
+
+region_df = merged.groupby("Region", as_index=False)["Out-of-School Children"].sum()
+region_df = region_df[region_df["Region"] != "Other"]  
+region_df = region_df.sort_values(by="Out-of-School Children", ascending=False)
+
+country_df = merged[["country", "Out-of-School Children"]].sort_values(by="Out-of-School Children", ascending=False)
+
+region_colors = {
+    "Sub-Saharan Africa": "#b22222",
+    "Central and Southern Asia": "#ffa726",
+    "Eastern and South-Eastern Asia": "#ffcc80",
+    "Latin America and the Caribbean": "#66bb6a",
+    "Northern Africa and Western Asia": "#4caf50",
+    "Europe and Northern America": "#2e7d32",
+    "Oceania": "#81c784"
+}
+color_list = region_df["Region"].map(region_colors)
+
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    x=region_df["Region"],
+    y=region_df["Out-of-School Children"],
+    text=region_df["Out-of-School Children"].apply(lambda x: f"{x:,.0f}"),
+    textposition='outside',
+    name="Regions",
+    marker=dict(color=color_list),
+    visible=True,
+    hoverinfo='skip'
+))
+
+fig.add_trace(go.Bar(
+    x=country_df["country"],
+    y=country_df["Out-of-School Children"],
+    text=country_df["Out-of-School Children"].apply(lambda x: f"{x:,.0f}"),
+    textposition='outside',
+    name="Countries",
+    marker=dict(color=country_df["Out-of-School Children"], colorscale="RdYlGn_r"),
+    visible=False,
+    hoverinfo='skip'
+))
+
+dropdown_buttons = [
+    dict(
+        label="Regional View", method="update",
+        args=[{"visible": [True, False]},
+              {"title": "Out-of-School Children by Region",
+               "xaxis": {"title": "Region"},
+               "yaxis": {"title": "Out-of-School Children"}}]
+    ),
+    dict(
+        label="All Countries", method="update",
+        args=[{"visible": [False, True]},
+              {"title": "Out-of-School Children by Country",
+               "xaxis": {"title": "Country"},
+               "yaxis": {"title": "Out-of-School Children"}}]
+    )
+]
+
+for country in sorted(country_df["country"].unique()):
+    y_values = [None] * len(country_df)
+    idx = country_df.index[country_df["country"] == country].tolist()[0]
+    y_val = country_df["Out-of-School Children"].iloc[idx]
+    y_values[idx] = y_val
+
+    dropdown_buttons.append(dict(
+        label=country,
+        method="update",
+        args=[
+            {"visible": [False, True],
+             "x": [country_df["country"]],
+             "y": [y_values],
+             "text": [[f"{y_val:,.0f}"]],
+             },
+            {
+                "title": f"{country} — Out-of-School Children",
+                "xaxis": {"title": "Country"},
+                "yaxis": {"title": "Out-of-School Children"},
+                "annotations": [dict(
+                    xref="paper", yref="paper",
+                    x=0.01, y=1.15,
+                    text=f"<b>{country}</b><br>Out-of-School Children: {y_val:,.0f}",
+                    showarrow=False,
+                    font=dict(size=12, color="black"),
+                    align="left",
+                    bgcolor="#f9f9f9",
+                    bordercolor="lightgray",
+                    borderwidth=1
+                )]
+            }
+        ]
+    ))
+
+fig.update_layout(
+    updatemenus=[dict(
+        buttons=dropdown_buttons,
+        direction="down",
+        x=1.0,
+        xanchor="right",
+        y=1.2,
+        yanchor="top",
+        showactive=True
+    )],
+    title="",  
+    xaxis_title="Region",
+    yaxis_title="Out-of-School Children",
+    xaxis=dict(
+        tickangle=20,
+        tickfont=dict(size=10)
+    ),
+    yaxis=dict(
+        tickfont=dict(size=10)
+    ),
+    template="simple_white",
+    margin=dict(t=80, b=80, l=50, r=30),
+    height=500,
+    width=800,
+    font=dict(size=11),
+    paper_bgcolor="white",
+    plot_bgcolor="white"
+)
+
+fig
+```
+
+## How learning shapes a longer life
+
+<div style="text-align: justify;">
+Higher school attendance is linked to longer, healthier lives.
+
+In places where <b style="color:#1CABE2;">fewer children attend school</b>, people often live <b style="color:#1CABE2;">shorter lives</b>. Countries with attendance rates under <b style="color:#1CABE2;">50%</b> also tend to have some of the <b style="color:#1CABE2;">lowest life expectancies</b>, sometimes even under <b style="color:#1CABE2;">50 years</b>. These are environments where children have limited access not only to <b style="color:#1CABE2;">education</b> but also to <b style="color:#1CABE2;">healthcare</b>, <b style="color:#1CABE2;">safety</b>, and <b style="color:#1CABE2;">support</b>.
+On the other hand, countries where <b style="color:#1CABE2;">school attendance is high</b> see people living into their <b style="color:#1CABE2;">60s or 70s</b>. These nations typically have <b style="color:#1CABE2;">stronger education systems</b>, <b style="color:#1CABE2;">better healthcare</b>, and an overall <b style="color:#1CABE2;">more stable environment</b>.
+
+</div>
+
+<p style="font-style: italic;">
+🔍 Select a dot to gather more information.
+</p>
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+meta = pd.read_csv("data/unicef_metadata.csv")
+
+attendance_avg = df1.groupby("country", as_index=False)["obs_value"].mean()
+attendance_avg.rename(columns={"obs_value": "avg_attendance"}, inplace=True)
+
+life_expectancy_avg = meta.groupby("country", as_index=False)["Life expectancy at birth, total (years)"].mean()
+life_expectancy_avg.rename(columns={"Life expectancy at birth, total (years)": "avg_life_expectancy"}, inplace=True)
+
+scatter_df = pd.merge(attendance_avg, life_expectancy_avg, on="country")
+
+def category_and_color(life):
+    if life <= 50:
+        return "Low (≤50)"
+    elif life < 60:
+        return "Medium (50–60)"
+    else:
+        return "High (≥60)"
+
+scatter_df["life_category"] = scatter_df["avg_life_expectancy"].apply(category_and_color)
+
+color_map = {
+    "Low (≤50)": "#FF6B6B",
+    "Medium (50–60)": "#FFC66E",
+    "High (≥60)": "#8BCF88"
+}
+
+fig = px.scatter(
+    scatter_df,
+    x="avg_attendance",
+    y="avg_life_expectancy",
+    color="life_category",
+    color_discrete_map=color_map,
+    hover_name="country",
+    hover_data={
+        "avg_attendance": ':.2f',
+        "avg_life_expectancy": ':.0f',
+        "life_category": False
+    },
+    labels={
+        "avg_attendance": "Adjusted Net Attendance Rate",
+        "avg_life_expectancy": "Life Expectancy at Birth"
+    },
+    size_max=15
+)
+
+fig.update_traces(marker=dict(size=12))
+fig.update_traces(
+    hovertemplate=(
+        "<b>%{hovertext}</b><br>" +
+        "Adjusted Net Attendance Rate: %{x:.2f}%<br>" +
+        "Life Expectancy: %{y:.0f} years"
+    ),
+    hovertext=scatter_df["country"]
+)
+
+x = scatter_df["avg_attendance"]
+y = scatter_df["avg_life_expectancy"]
+m, b = np.polyfit(x, y, 1)
+
+x_range = np.linspace(x.min(), x.max(), 100)
+regression_line = go.Scatter(
+    x=x_range,
+    y=m * x_range + b,
+    mode="lines",
+    line=dict(color="gray", dash="dash"),
+    name="Trend Line"
+)
+
+fig.add_trace(regression_line)
+
+fig.update_layout(
+    template="simple_white",
+    height=500,
+    width=800,
+    title="",
+    margin=dict(t=60, b=30, l=40, r=40),
+    font=dict(size=11),
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.15,
+        xanchor="center",
+        x=0.5
+     ),
+    xaxis=dict(
+        title="Adjusted Net Attendance Rate",
+        domain=[0.1, 1]  
+    ),
+    yaxis=dict(
+        title="Life Expectancy at Birth",
+        domain=[0.2, 1]  
+    )
+)
+
+fig
+```
+
+<div style="margin-top: 30px; text-align: justify;">
+
+<b style="color:#1CABE2;">Education</b> provides much more than simple knowledge. It offers children the tools to make <b style="color:#1CABE2;">better choices</b> and build <b style="color:#1CABE2;">better futures</b> for themselves. Ensuring that <b style="color:#1CABE2;">every youth can go to school</b> is about giving them a <b style="color:#1CABE2;">real opportunity to have a longer and healthier life</b>.
+
+</div>
+
+## The silent gap between boys and girls
+
+<div style="text-align: justify;">
+School attendance still shows clear gender disparities across countries. 
+
+In many countries, <b style="color:#1CABE2;">girls are still less likely to attend school than boys</b>, highlighting a still existing <b style="color:#1CABE2;">gender gap in education</b>.  
+The <b style="color:#1CABE2;">widest gap</b> is found in <b style="color:#1CABE2;">Afghanistan</b>, where boys exceed girls in classrooms by almost <b style="color:#1CABE2;">20 percentage points</b>. Similar situations appear in <b style="color:#1CABE2;">Yemen</b>, <b style="color:#1CABE2;">Guinea</b>, and <b style="color:#1CABE2;">Eritrea</b>, where <b style="color:#1CABE2;">girls continue to be excluded from education</b>. Even in countries like the <b style="color:#1CABE2;">Turks and Caicos Islands</b> and <b style="color:#1CABE2;">Saint Lucia</b>, where <b style="color:#1CABE2;"> the overall attendance rate is high</b>, boys still represent the majority of students.  
+
+<p style="font-style: italic;">
+🔍 Press on "Male" or "Female" to have a gender specific view.
+</p>
+
+</div>
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.graph_objects as go
+
+df = pd.read_csv("data/unicef_indicator_1.csv")
+
+gender_df = df[df["sex"].isin(["Male", "Female"])]
+avg_attendance = gender_df.groupby(["country", "sex"])["obs_value"].mean().unstack()
+
+avg_attendance["gender_gap"] = avg_attendance["Female"] - avg_attendance["Male"]
+
+largest_negative_gap = avg_attendance.nsmallest(10, "gender_gap").reset_index()
+largest_negative_gap["Female"] = largest_negative_gap["Female"].round(2)
+largest_negative_gap["Male"] = largest_negative_gap["Male"].round(2)
+largest_negative_gap["Gap"] = (largest_negative_gap["Male"] - largest_negative_gap["Female"]).round(2)
+
+global_avg_att = df[df["sex"].isin(["Male", "Female"])]["obs_value"].mean()
+
+fig = go.Figure()
+
+fig.add_trace(go.Bar(
+    x=largest_negative_gap["country"],
+    y=largest_negative_gap["Female"],
+    name="Female",
+    marker_color="#FDE68A",
+    text=[f"{val:.2f}%" for val in largest_negative_gap["Female"]],
+    textposition="outside",
+    hovertemplate="<b>%{x}</b><br>Female Attendance: %{y:.2f}%<extra></extra>"
+))
+
+fig.add_trace(go.Bar(
+    x=largest_negative_gap["country"],
+    y=largest_negative_gap["Male"],
+    name="Male",
+    marker_color="#FCA5A5",
+    text=[f"{val:.2f}%" for val in largest_negative_gap["Male"]],
+    textposition="outside",
+    hovertemplate="<b>%{x}</b><br>Male Attendance: %{y:.2f}%<extra></extra>"
+))
+
+fig.add_trace(go.Scatter(
+    x=largest_negative_gap["country"],
+    y=[global_avg_att] * len(largest_negative_gap),
+    mode="lines",
+    name="Global Average Attendance",
+    line=dict(color="gray", dash="dash")
+))
+
+fig.update_layout(
+    barmode='group',
+    xaxis_title="Country",
+    yaxis_title="Average Attendance Rate",
+    template="simple_white",
+    legend_title="Gender",
+    height=500,
+    width=800,
+    margin=dict(t=60, b=60, l=60, r=30),
+    font=dict(size=11),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+    title="",
+    legend=dict(
+        orientation="h",         
+        yanchor="bottom",
+        y=-0.3,                  
+        xanchor="center",
+        x=0.5                   
+    )
+)
+
+fig
+```
+
+<div style="margin-top: 30px; text-align: justify;">
+
+These differences are more than just numbers.  
+<b style="color:#1CABE2;">Closing the gender gap</b> is essential to obtain <b style="color:#1CABE2;">real progress </b>.
+
+</div>
+
+## A decade of progress: ups and downs
+
+<div style="text-align: justify;">
+Global school attendance shifted greatly from 2010 to 2020, rising sharply, facing drops, and lastly reaching its highest point.
+
+<ul>
+  <li>
+    Between <b style="color:#1CABE2;">2010 and 2020</b>, global <b style="color:#1CABE2;">school attendance</b> went through both progress and difficulty. It started at just <b style="color:#1CABE2;">34%</b>, showing how many children could not still access their <b style="color:#1CABE2;">right to learn</b>.
+  </li>
+  <li>
+    By <b style="color:#1CABE2;">2012</b>, attendance had risen to <b style="color:#1CABE2;">77%</b>, showing big improvements in <b style="color:#1CABE2;">education access</b>. 
+  </li>
+  <li>
+    But in <b style="color:#1CABE2;">2013</b>, it fell to <b style="color:#1CABE2;">54%</b> and remained inconsistent during the decade.
+  </li>
+  <li>
+    From <b style="color:#1CABE2;">2016 on</b>, there was a slow and consistent increase, reaching <b style="color:#1CABE2;">88% in 2020</b>, the <b style="color:#1CABE2;">highest level scored</b> in the considered period. This growth may represent stronger <b style="color:#1CABE2;">efforts</b>, better <b style="color:#1CABE2;"> policies</b>, and initiatives affecting more children all around the world.
+  </li>
+</ul>
+
+The overall trend is positive, but its <b style="color:#1CABE2;">inconsistent shifting</b> reminds us that progress is not granted. <b style="color:#1CABE2;">Investment</b> and <b style="color:#1CABE2;">global collaboration</b> are essential to make sure that <b style="color:#1CABE2;">every youth has the chance to stay in school</b>.
+</div>
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.graph_objects as go
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+
+attendance_by_year = df1.groupby("time_period", as_index=False)["obs_value"].mean()
+attendance_by_year.rename(columns={"time_period": "Year", "obs_value": "Attendance Rate"}, inplace=True)
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=attendance_by_year["Year"],
+    y=attendance_by_year["Attendance Rate"],
+    mode="lines+markers+text",
+    line=dict(color="#8BCF88", width=5),
+    marker=dict(size=10),
+    text=[f"{v:.0f}%" for v in attendance_by_year["Attendance Rate"]],
+    textposition="top center",
+    name="",
+    showlegend=False,
+    hoverinfo="x+y+text",
+    hovertemplate="Year: %{x}<br>Adjusted Net Attendance Rate: %{y:.2f}%"
+))
+
+fig.update_layout(
+    xaxis_title="Year",
+    yaxis_title="Adjusted Net Attendance Rate",
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    height=500,
+    width=800,
+    dragmode=False,
+    hovermode="closest",
+    clickmode="none",
+    margin=dict(t=40, b=60, l=60, r=30),
+    font=dict(size=11),
+    xaxis=dict(
+        tickmode="linear",
+        showgrid=False,
+    ),
+    yaxis=dict(
+        showgrid=True,
+        gridcolor="#EEEEEE",
+        ticksuffix="%",
+        tickfont=dict(size=10)
+    )
+)
+
+fig
+```
+
+## How the world went back to school
+
+<div style="text-align: justify;">
+
+<div style="text-align: justify;">
+Tracking attendance over time reveals more than just numbers.
+
+From <b style="color:#1CABE2;">2010</b>, school attendance was highly unbalanced, with many countries below <b style="color:#1CABE2;">35%</b>. In <b style="color:#1CABE2;">2012</b>, a rise pushed many nations to <b style="color:#1CABE2;">85–95%</b>, indicating a shift. But by <b style="color:#1CABE2;">2013</b>, attendance dropped again in several countries, falling between <b style="color:#1CABE2;">40% and 70%</b>, making progress inconsistent.<br>
+By <b style="color:#1CABE2;">2014 and 2015</b>, a clear division had formed: some countries moved forward, while others remained stuck in the <b style="color:#1CABE2;">30–50%</b> range. In the following years, especially from <b style="color:#1CABE2;">2017 on</b>, more countries started to close the gap, with many reaching <b style="color:#1CABE2;">70–90%</b> attendance.<br>
+In <b style="color:#1CABE2;">2019</b>, the trend became stronger, with most countries scoring between <b style="color:#1CABE2;">85% and 95%</b>, and only a few still below <b style="color:#1CABE2;">60%</b>. Surprisingly, despite the global pandemic of <b style="color:#1CABE2;">2020</b>, attendance reached its highest levels, reflecting well functioning policy efforts. Overall, the decade ends with progress.
+</div>
+
+<!--
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+%pip install scipy
+```
+-->
+
+```{python}
+#| echo: false
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+from scipy.stats import gaussian_kde
+
+df1 = pd.read_csv("data/unicef_indicator_1.csv")
+df1.rename(columns={"obs_value": "Attendance Rate", "time_period": "Year"}, inplace=True)
+df_ridge = df1[["country", "Year", "Attendance Rate"]]
+df_ridge = df_ridge[(df_ridge["Year"] >= 2010) & (df_ridge["Year"] <= 2020)]
+df_ridge.dropna(inplace=True)
+
+years = sorted(df_ridge["Year"].unique())
+fig = go.Figure()
+
+for year in years:
+    data = df_ridge[df_ridge["Year"] == year]["Attendance Rate"]
+    kde = gaussian_kde(data)
+    x_vals = np.linspace(0, 100, 500)
+    y_vals = kde(x_vals)
+
+    fig.add_trace(go.Scatter(
+        x=x_vals,
+        y=y_vals,
+        mode='lines',
+        name=str(year),
+        visible=(year == years[0]),
+        line=dict(color='green', width=3),
+        fill='tozeroy',
+        fillcolor='rgba(0,128,0,0.1)',
+        hoverinfo='skip'
+    ))
+
+steps = []
+for i, year in enumerate(years):
+    step = dict(
+        method="update",
+        args=[{"visible": [j == i for j in range(len(years))]},
+              {"title": f"Distribution of Attendance Rate — {year}"}],
+        label=str(year)
+    )
+    steps.append(step)
+
+sliders = [dict(
+    active=0,
+    currentvalue={"prefix": "Year: "},
+    pad={"t": 50},
+    steps=steps
+)]
+
+fig.update_layout(
+    sliders=sliders,
+    xaxis_title="Adjusted Net Attendance Rate",
+    yaxis_title="Density",
+    template="simple_white",
+    height=500,
+    width=800,
+    margin=dict(t=60, b=60, l=60, r=30),
+    font=dict(size=11),
+    paper_bgcolor="white",
+    plot_bgcolor="white"
+)
+
+fig
+```
+
+<p style="margin-top: 30px; font-style: italic;">
+⬆️ Switch year to see how attendance distribution change!
+</p>
+
+## Conclusion
+
+<div style="text-align: justify;">
+This report highlights that <b style="color:#1CABE2;">access to education remains unequal</b>, with attendance rates still linked to <b style="color:#1CABE2;">income, location, and gender</b>. While some countries have reached <b style="color:#1CABE2;">90% attendance</b>, others, remain below <b style="color:#1CABE2;">25%</b>.<br>
+<b style="color:#1CABE2;">Sub-Saharan Africa</b> scores the largest amount of <b style="color:#1CABE2;">out-of-school youths</b>, and in many countries, <b style="color:#1CABE2;">girls continue to stay behind</b>.<br>
+Between <b style="color:#1CABE2;">2010 and 2020</b>, global attendance increased from <b style="color:#1CABE2;">34%</b> to <b style="color:#1CABE2;">88%</b>, showing that progress is possible but also inconsistent.<br>
+To close the gap, we must <b style="color:#1CABE2;">invest in low-income countries</b>, <b style="color:#1CABE2;">prioritise girls’ education</b>, and <b style="color:#1CABE2;">support the right to education in areas affected by conflicts</b>. Schools in rural areas need better infrastructure, teachers need support, and communities must be engaged.<br>
+</div>
+
+<div style="text-align: justify;">
+To gather more information on our <span style="color:#1CABE2; font-weight:bold">initiatives</span>, <a href="https://www.unicef.org/digitaleducation/initiatives" target="_blank" style="color:#1CABE2; font-weight:bold; background-color:yellow; text-decoration:underline;">click here</a>.
+</div>
+
+::: {.callout-important}
+## Help us improve
+
+<p style="margin-bottom: 0.5rem;">
+Where do you think <strong style="color:#1CABE2;">UNICEF</strong> should focus more to improve global education?
+Select the areas you believe are most important:
+</p>
+
+<form id="unicef-survey" style="font-size: 1rem; margin-top: 1rem;">
+  <input type="checkbox" id="infrastructure" name="focus" value="Infrastructure">
+  <label for="infrastructure">School infrastructure in rural areas</label><br>
+
+  <input type="checkbox" id="teachers" name="focus" value="Teaching personnel">
+  <label for="teachers">Training and supporting teachers</label><br>
+
+  <input type="checkbox" id="gender" name="focus" value="Gender equality">
+  <label for="gender">Gender equality in school access</label><br>
+
+  <input type="checkbox" id="conflict" name="focus" value="Conflict zones">
+  <label for="conflict">Education in conflict zones</label><br>
+
+  <input type="checkbox" id="awareness" name="focus" value="Awareness">
+  <label for="awareness">Community awareness on the value of education</label><br><br>
+
+   <button type="button" onclick="submitSurvey()" style="background-color:#1CABE2; color:white; padding:6px 12px; border:none; border-radius:5px; cursor: pointer; margin-top: -1px; margin-bottom: 10px;">Submit</button>
+</form>
+<div id="survey-feedback" style="display:none; margin-top: 1rem; color: #1CABE2; font-weight: bold;">
+Thank you for your input! Your contribite helps shape a better future.
+</div>
+
+<script>
+function submitSurvey() {
+  const feedback = document.getElementById('survey-feedback');
+  feedback.style.display = 'block';
+}
+</script>
+:::
+
+
+<p style="text-align:center;">
+  <img src="images/Unicef_for_every_child.png" 
+       alt="UNICEF for Every Child" 
+       style="max-width:100%; height:auto; display:block; margin-left:auto; margin-right:auto;border-radius: 10px;">
+</p>
